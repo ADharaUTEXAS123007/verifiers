@@ -489,4 +489,15 @@ class RLTrainer(Trainer):
             self.args.torch_empty_cache_steps is not None
             and self.state.global_step % self.args.torch_empty_cache_steps == 0
         ):
+            # Log memory usage when clearing cache
+            allocated = torch.cuda.memory_allocated() / 1e9
+            reserved = torch.cuda.memory_reserved() / 1e9
+            max_allocated = torch.cuda.max_memory_allocated() / 1e9
+            self.logger.info(
+                f"Step {self.state.global_step}: GPU memory after cache clear - "
+                f"Allocated: {allocated:.2f} GB, "
+                f"Reserved: {reserved:.2f} GB, "
+                f"Max Allocated: {max_allocated:.2f} GB"
+            )
+            torch.cuda.reset_peak_memory_stats()
             clear_device_cache()
